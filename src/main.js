@@ -20,6 +20,15 @@ import { createWarmup } from './render/warmup.js'; // (perf r3)
 import { REFL_LAYER } from './world/water.js';
 import { BIG_CASTER_LAYER } from './render/csm.js';
 
+async function showLoadingStage(completed, label) {
+  document.getElementById('loading-stage').textContent = `${Math.floor(completed) + 1} / 16 · ${label}`;
+  document.getElementById('loading-progress').value = completed;
+  // Paint each stage before starting synchronous setup work.
+  await new Promise(resolve => requestAnimationFrame(() => requestAnimationFrame(resolve)));
+}
+
+await showLoadingStage(0, 'Loading city textures…');
+
 const params = new URLSearchParams(location.search);
 const shotName = params.get('shot');
 
@@ -48,9 +57,11 @@ const scene = new THREE.Scene();
 const camera = new THREE.PerspectiveCamera(55, innerWidth / innerHeight, 0.1, 150000);
 
 const lighting = createLighting({ renderer, scene });
-const world = await buildCity({ scene, renderer });
+const world = await buildCity({ scene, renderer, onProgress: showLoadingStage });
+await showLoadingStage(13, 'Loading character…');
 const input = createInput(renderer.domElement);
 const player = await createPlayer({ scene, world, camera, input, renderer });
+await showLoadingStage(14, 'Preparing graphics…');
 const hud = createHud({ player, world, camera });
 const pipeline = createPipeline({ renderer, scene, camera, lighting });
 
@@ -75,6 +86,8 @@ if (!shotName) import('./game/systems/index.js').then(m => m.initSystems(ctx)).c
   .then(() => warmup?.rescan()); // (perf r3) + the meshes the systems / combat added (trickled by warmup.step)
 ctx.timeScale = 1; // global game-time scale (combat hit-stop / slow-mo); ctx.realDt = unscaled frame time
 
+await showLoadingStage(15, 'Rendering scene…');
+
 if (shotName) {
   const shot = SHOTS[shotName];
   if (!shot) throw new Error('unknown shot ' + shotName);
@@ -88,6 +101,7 @@ if (shotName) {
     await new Promise(r => requestAnimationFrame(r));
   }
   window.__shotInfo = `${renderer.info.render.calls} calls, ${renderer.info.render.triangles} tris`;
+  document.getElementById('loading')?.remove();
   window.__shotReady = true;
 } else {
   const clock = new THREE.Clock();
@@ -98,5 +112,6 @@ if (shotName) {
     for (const s of ctx.systems) s.update?.(dt);
     pipeline.render(dt);
     warmup?.step(); // (perf r3)
+    document.getElementById('loading')?.remove();
   });
 }

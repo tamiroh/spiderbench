@@ -33,9 +33,10 @@ import { attachLife } from './npc/life.js';
 import { applyDistanceFade } from './pool.js';
 import { batchTiles } from './tilebatch.js'; // (perf)
 
-export async function buildCity({ scene, renderer }) {
+export async function buildCity({ scene, renderer, onProgress = async () => {} }) {
   const t0 = performance.now();
   const T = await loadCityTextures(renderer);
+  await onProgress(1, 'Generating buildings…');
   const facadeMat = createFacadeMaterial(T);
   const detailMat = createDetailMaterial(T);
   applyDistanceFade(detailMat, 320, 450); // citylife: small facade details dissolve 320-450 m; tiles hidden beyond (no pop)
@@ -59,13 +60,16 @@ export async function buildCity({ scene, renderer }) {
     ],
   });
   tick('gen');
+  await onProgress(2, 'Building landmarks…');
   const sqd = dressSquares(gen, blocks); console.log('[city] (layout2 r4) square dressing', JSON.stringify(sqd)); // Broadway bow-tie plazas
   const heroRect = gen.excluded[0] ? { ...gen.excluded[0], x0: HERO_RECT.x0 } : HERO_RECT;
   const root = new THREE.Group(); root.name = 'city';
   scene.add(root);
   buildStandalone({ scene: root, gen, T }); // citygeo: Grand Central, Times-Square screens (writes into the tile builders)
   buildTimesSquare({ scene: root, gen }); // timessq: screens, plazas, TKTS steps, One-Times-Square tower (writes into the tile builders)
+  await onProgress(3, 'Building rooftops…');
   const rooftops = await buildRooftops({ scene: root, gen, facadeMat, T, renderer, extraRoofs: [{ rect: heroRect, H: 96 }] }); // rooftops: roof skins, penthouses, clutter (writes into the tile builders)
+  await onProgress(4, 'Preparing city geometry…');
   const signage = buildSignage({ scene: root, gen }); // billboards: rooftop billboards, wall ads, blade signs, LED corners (steel -> detail tiles)
   const tileMeshes = [];
   // (perf) the far-LOD tiles are grouped into 2x2 super-tiles (tilebatch.js): one draw per super-tile while all its
@@ -80,7 +84,9 @@ export async function buildCity({ scene, renderer }) {
     // (street r3) release the builders' JS number arrays as each tile is converted to typed arrays: the renderer hit the
     // V8 heap limit here ('V8 javascript OOM (CALL_AND_RETRY_LAST)' at ~3.3 GB, every page crashed after [rooftops])
     t.fac = t.lod = t.det = null;
+    if (tileMeshes.length % 16 === 0) await onProgress(4 + tileMeshes.length / gen.tiles.size, 'Preparing city geometry…');
   }
+  await onProgress(5, 'Combining city geometry…');
   const ctr = tileMeshes.map(t => [t.cx, t.cz]);
   const facB = batchTiles(facG, facadeMat, 'facade', { castShadow: true, receiveShadow: true, merge: false }, ctr); // (perf) big: per tile
   const lodB = batchTiles(lodG, facadeMat, 'facadeLod', { castShadow: true, receiveShadow: true }, ctr);
@@ -90,9 +96,11 @@ export async function buildCity({ scene, renderer }) {
   tick('tiles');
   const hero = buildHero({ scene: root, rect: heroRect, facadeMat, renderer, solids: gen.solids, zips: gen.zips });
   gen.boxes.push(hero.box); gen.footprints.push(hero.footprint);
+  await onProgress(6, 'Building streets and parks…');
   const ground = buildGround({ scene: root, T, blocks, facadeMat, solids: gen.solids, zips: gen.zips, renderer });
   buildPark({ scene: root, facadeMat, solids: gen.solids, zips: gen.zips, meadowDist, parkPaths: ground.parkPaths }); // park agent: Met-like museum + schist outcrops
   tick('ground');
+  await onProgress(7, 'Building waterfront…');
   const far = buildFarShore({ scene: root, facadeMat, solids: gen.solids });
   tick('far');
   const bridges = buildBridges({ scene: root, T, solids: gen.solids, zips: gen.zips, boxes: gen.boxes }); // foundation: East River bridges (bridges r1: + anchor boxes)
@@ -103,12 +111,15 @@ export async function buildCity({ scene, renderer }) {
   tick('hinterland ' + hinter.count);
   const boats = buildBoats({ scene: root, solids: gen.solids, // foundation: river traffic + wakes (+ round 12: moored boats at the piers)
     docks: [...PIERS, ...(far.piers ?? []).map(([x0, z0, x1, z1]) => ({ x0, z0, x1, z1 }))] });
+  await onProgress(8, 'Loading vehicles…');
   const vehModels = await loadVehicleModels(renderer); // (bridges r3) shared by the highways and the street traffic
   const highways = buildHighways({ scene: root, T, solids: gen.solids, models: vehModels }); // foundation: West Side Highway / FDR + traffic ((bridges r3) real vehicles + real trees)
   // (citylife bridges) bridge cars are ordinary street traffic now (collidable, junction rules, same models): no bridgeTraffic
   const nSolidsPre = gen.solids.count; // citygeo: props' solids start here (refit below)
+  await onProgress(9, 'Building street details…');
   const props = await buildProps({ scene: root, blocks, parkPaths: ground.parkPaths, T, solids: gen.solids, buildings: gen.buildings }); // citylife
   tick('props');
+  await onProgress(10, 'Planting trees…');
   { // (bridges r3) bridge ramp mouths: no street furniture / trees on the apron, the ramp foot or the joined street's
     // sidewalks and parking lanes at the T (lamps, signal masts / posts stay). Parked cars: npc/roads.js bridgeJunctions.
     const K = bridgeKeepOuts(), inR = (r, x, z) => x > r.x0 && x < r.x1 && z > r.z0 && z < r.z1;
@@ -158,9 +169,11 @@ export async function buildCity({ scene, renderer }) {
   if (gen.variety) console.log('[city] (layout2 r3) block variety', JSON.stringify(gen.variety));
   const trees = buildTrees({ scene: root, T, spots: props.treeSpots, parkPaths: ground.parkPaths });
   const traffic = buildTraffic({ scene: root, phase: props.phase, models: vehModels });
+  await onProgress(11, 'Loading pedestrians…');
   const peds = await buildPeds({ scene: root, blocks, parkPaths: ground.parkPaths, props, traffic }); // citylife
   const flags = buildFlags({ scene: root, flags: gen.buildings.flags });
   tick('life');
+  await onProgress(12, 'Preparing collisions…');
   let time = 0;
   let _fr = null, _pm = null, _sp = null; // (perf r2) tile pre-upload frustum
 
