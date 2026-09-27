@@ -187,7 +187,7 @@ export function loadVehicleModels(renderer) {
   _vehLoad = (async () => {
     try {
       const { GLTFLoader } = await import('three/examples/jsm/loaders/GLTFLoader.js');
-      const gltf = await new GLTFLoader().loadAsync('/assets/city/vehicles.glb');
+      const gltf = await new GLTFLoader().loadAsync(`${import.meta.env.BASE_URL}assets/city/vehicles.glb`);
       const geos = {};
       gltf.scene.traverse((o) => {
         if (!o.isMesh) return;
@@ -205,7 +205,7 @@ export function loadVehicleModels(renderer) {
         g.computeBoundingSphere();
         geos[o.name] = g;
       });
-      const atlas = await new THREE.TextureLoader().loadAsync('/assets/city/tex/vehicles_atlas2.webp');
+      const atlas = await new THREE.TextureLoader().loadAsync(`${import.meta.env.BASE_URL}assets/city/tex/vehicles_atlas2.webp`);
       atlas.colorSpace = THREE.SRGBColorSpace; atlas.flipY = false;
       atlas.anisotropy = Math.min(8, renderer.capabilities.getMaxAnisotropy());
       atlas.needsUpdate = true;

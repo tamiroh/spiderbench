@@ -531,7 +531,7 @@ const FAM_WARM = [1.02, 0.99, 0.94], FAM_COOL = [0.92, 0.96, 1.0], FAM_N = [1, 1
 export async function buildRooftops({ scene, gen, facadeMat, T, renderer, extraRoofs = [] }) {
   void facadeMat;
   const aniso = Math.min(8, renderer?.capabilities?.getMaxAnisotropy?.() ?? 4);
-  const [imC, imN] = await Promise.all([loadImage('/assets/city/tex/roof_col.png'), loadImage('/assets/city/tex/roof_nrm.png')]);
+  const [imC, imN] = await Promise.all([loadImage(`${import.meta.env.BASE_URL}assets/city/tex/roof_col.png`), loadImage(`${import.meta.env.BASE_URL}assets/city/tex/roof_nrm.png`)]);
   const mat = createRoofMaterial(arrayTex(imC, true, aniso), arrayTex(imN, false, aniso), T.noise);
   const aoMat = new THREE.MeshBasicMaterial({ vertexColors: true, blending: THREE.MultiplyBlending, premultipliedAlpha: true, transparent: true,
     depthWrite: false, toneMapped: false, fog: false });

@@ -646,7 +646,7 @@ function autoLod(geo, n = 2) {
 async function loadPropModels() {
   try {
     const { GLTFLoader } = await import('three/examples/jsm/loaders/GLTFLoader.js');
-    const gltf = await new GLTFLoader().loadAsync('/assets/city/props.glb');
+    const gltf = await new GLTFLoader().loadAsync(`${import.meta.env.BASE_URL}assets/city/props.glb`);
     const geos = {};
     gltf.scene.traverse((o) => {
       if (!o.isMesh) return;

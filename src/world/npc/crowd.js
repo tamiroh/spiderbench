@@ -683,10 +683,10 @@ function createBlobs(scene, animTex, meta) {
 // ------------------------------------------------------------------ crowd
 export async function createCrowd({ scene, blocks, parkPaths, props, roads, phase }) {
   const [meta, bin, pedTex, bakeTex] = await Promise.all([
-    fetch('/assets/city/npc/people.json').then(r => r.json()),
-    fetch('/assets/city/npc/people.bin').then(r => r.arrayBuffer()),
-    new THREE.TextureLoader().loadAsync('/assets/city/tex/peds_atlas.webp').catch(() => null), // (peds r1) faces / hair / fabric
-    new THREE.TextureLoader().loadAsync('/assets/city/npc/people_bake.webp').catch(() => null), // (peds r2) Cycles cloth normal + AO
+    fetch(`${import.meta.env.BASE_URL}assets/city/npc/people.json`).then(r => r.json()),
+    fetch(`${import.meta.env.BASE_URL}assets/city/npc/people.bin`).then(r => r.arrayBuffer()),
+    new THREE.TextureLoader().loadAsync(`${import.meta.env.BASE_URL}assets/city/tex/peds_atlas.webp`).catch(() => null), // (peds r1) faces / hair / fabric
+    new THREE.TextureLoader().loadAsync(`${import.meta.env.BASE_URL}assets/city/npc/people_bake.webp`).catch(() => null), // (peds r2) Cycles cloth normal + AO
   ]);
   if (bakeTex) { bakeTex.flipY = false; bakeTex.colorSpace = THREE.NoColorSpace; bakeTex.anisotropy = 4; bakeTex.needsUpdate = true; }
   const useBake = !!bakeTex && !!meta.bake && meta.variants[0]?.lods[0]?.uv !== undefined;

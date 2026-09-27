@@ -11,7 +11,7 @@
 import * as THREE from 'three';
 import { nightK } from '../../render/daynight.js';
 
-const BASE = '/assets/audio/';
+const BASE = `${import.meta.env.BASE_URL}assets/audio/`;
 const STEMS = ['day', 'night', 'pulseA', 'pulseB'];
 const SPRITE_BUS = { trav: 'sfx', combat: 'sfx', ui: 'ui', world: 'ambience' };
 const clamp = THREE.MathUtils.clamp;
@@ -52,6 +52,7 @@ export function createAudio() {
 
   // ------------------------------------------------------------------ loading (lazy, async, never blocking)
   async function fetchBuf(url, tries = 3) {
+    if (url.startsWith('/assets/')) url = import.meta.env.BASE_URL + url.slice(1);
     for (let i = 0; i < tries; i++) {
       try { const r = await fetch(url); if (!r.ok) throw new Error(r.status + ' ' + url); return await ac.decodeAudioData(await r.arrayBuffer()); }
       catch (e) { if (i === tries - 1) throw e; await new Promise(r => setTimeout(r, 400 * (i + 1))); }

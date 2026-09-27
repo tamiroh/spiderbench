@@ -90,7 +90,7 @@ export class RoofPlants {
   get count() { return this.items[0].length + this.items[1].length; }
   build(scene) {
     if (!this.count) return;
-    const tex = new THREE.TextureLoader().load('/assets/city/tex/roofplants.webp');
+    const tex = new THREE.TextureLoader().load(`${import.meta.env.BASE_URL}assets/city/tex/roofplants.webp`);
     tex.colorSpace = THREE.SRGBColorSpace; tex.anisotropy = 4;
     const mat = plantMaterial(tex);
     this.pools = [moundGeometry(), grassGeometry()].map((g, i) => {

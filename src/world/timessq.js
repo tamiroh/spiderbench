@@ -18,7 +18,7 @@ import { nightK } from '../render/daynight.js'; // (daynight)
 
 const CH = G.CURB_H;
 const TS_SPILL = 1.3; // (r5) was 1.0 // (r4) strength of the screens' coloured light spill cards
-const TEX = '/assets/city/tex/';
+const TEX = `${import.meta.env.BASE_URL}assets/city/tex/`;
 // block rows (street z at the north edge of the row) and x extents
 export const TS = {
   plazaRows: [-240, -160],       // rows with the pedestrian plazas

@@ -40,7 +40,7 @@ export function initCombat(ctx) {
   c.spidey = createSpidey(c);
   const me = c.spidey;
   // brute texture (public/assets/enemies, built by tools/blender/enemy_tex.py); tint fallback if missing
-  new THREE.TextureLoader().load('/assets/enemies/brute_basecolor.webp', t => { t.colorSpace = THREE.SRGBColorSpace; t.flipY = false; t.anisotropy = 4; c.bruteTex = t; }, undefined, () => {});
+  new THREE.TextureLoader().load(`${import.meta.env.BASE_URL}assets/enemies/brute_basecolor.webp`, t => { t.colorSpace = THREE.SRGBColorSpace; t.flipY = false; t.anisotropy = 4; c.bruteTex = t; }, undefined, () => {});
 
   c.sfx = (k, a) => { try { const s = sys?.audio?.sfx; if (!s) return; if (k === 'land') s.land(a); else if (k === 'whoosh') s.whoosh(a); else if (k === 'thwip') s.thwip(a); else if (k === 'deny') s.deny?.(); else s[k]?.(a); } catch (e) { /* audio optional */ } }; // (audio r1) + hit / hurt / shot / slam
   c.shake = a => P.cam?.shake?.(a);

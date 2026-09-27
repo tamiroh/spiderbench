@@ -242,7 +242,7 @@ export function buildWaterfront({ scene, T, piers = [], pileFields = [], solids 
   // atlas: 1 px placeholder until the image arrives (texture loads retry, see textures.js)
   const ph = new THREE.DataTexture(new Uint8Array([128, 126, 122, 255]), 1, 1); ph.needsUpdate = true;
   const mat = createCoastMaterial(T, ph);
-  loadImageRetry('/assets/city/tex/coast_atlas.webp').then(im => {
+  loadImageRetry(`${import.meta.env.BASE_URL}assets/city/tex/coast_atlas.webp`).then(im => {
     const tx = new THREE.Texture(im); tx.colorSpace = THREE.SRGBColorSpace; tx.anisotropy = 8; tx.generateMipmaps = true;
     tx.minFilter = THREE.LinearMipmapLinearFilter; tx.needsUpdate = true; mat.userData.uni.tAtlas.value = tx;
   }).catch(e => console.warn('[coast] atlas', e.message));

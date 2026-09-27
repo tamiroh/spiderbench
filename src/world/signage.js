@@ -22,7 +22,7 @@ import { AD_AVG_L, AD_AVG_P } from './ts_ads_meta.js';
 import { nightK, screenK } from '../render/daynight.js'; // (daynight)
 import { adsTexture } from './adstex.js'; // (r3) shared GPU copy of the ad atlas
 
-const TEX = '/assets/city/tex/';
+const TEX = `${import.meta.env.BASE_URL}assets/city/tex/`;
 const CELL = 512;
 const Q = typeof location !== 'undefined' ? new URLSearchParams(location.search) : new URLSearchParams();
 const OFF = Q.has('nosignage');

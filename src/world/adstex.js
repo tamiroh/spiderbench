@@ -4,7 +4,7 @@ import * as THREE from 'three';
 let tex = null;
 export function adsTexture() {
   if (!tex) {
-    tex = new THREE.TextureLoader().load('/assets/city/tex/ts_ads.webp');
+    tex = new THREE.TextureLoader().load(`${import.meta.env.BASE_URL}assets/city/tex/ts_ads.webp`);
     tex.colorSpace = THREE.SRGBColorSpace; tex.anisotropy = 8;
   }
   return tex;

@@ -228,7 +228,7 @@ function arrayTexFromStrip(url, srgb, fill) {
   return u;
 }
 export function barkTextures() {
-  BARK_TEX ??= { col: arrayTexFromStrip('/assets/city/tex/bark_col.webp', true, 110), nrm: arrayTexFromStrip('/assets/city/tex/bark_nrm.webp', false, 128) };
+  BARK_TEX ??= { col: arrayTexFromStrip(`${import.meta.env.BASE_URL}assets/city/tex/bark_col.webp`, true, 110), nrm: arrayTexFromStrip(`${import.meta.env.BASE_URL}assets/city/tex/bark_nrm.webp`, false, 128) };
   return BARK_TEX;
 }
 // per-instance aBark = (layer, tint r, g, b)

@@ -42,7 +42,7 @@ export function applySuitFabric(root) {
   let mat = null;
   root.traverse(o => { if (!o.isMesh) return; for (const m of [].concat(o.material)) if (m?.name === 'SpiderSuit') mat = m; });
   if (!mat || mat.userData.__patches?.has('suitFabric')) return mat;
-  if (!uniforms.uFabHex.value && loaded === 0) { loadDetail('/assets/tex/suit_weave_hex.png', 'uFabHex'); loadDetail('/assets/tex/suit_weave_knit.png', 'uFabKnit'); }
+  if (!uniforms.uFabHex.value && loaded === 0) { loadDetail(`${import.meta.env.BASE_URL}assets/tex/suit_weave_hex.png`, 'uFabHex'); loadDetail(`${import.meta.env.BASE_URL}assets/tex/suit_weave_knit.png`, 'uFabKnit'); }
   addShaderPatch(mat, 'suitFabric', sh => {
     Object.assign(sh.uniforms, uniforms);
     sh.vertexShader = sh.vertexShader

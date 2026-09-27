@@ -233,7 +233,7 @@ export const POSES = {
 // ---------------------------------------------------------------- rig
 export async function loadCharacter(renderer) {
   let gltf = null, source = 'placeholder';
-  const url = new URLSearchParams(location.search).get('char') || '/assets/spiderman.glb';
+  const url = new URLSearchParams(location.search).get('char') || `${import.meta.env.BASE_URL}assets/spiderman.glb`;
   try {
     // single request: a missing file (or the dev server's HTML fallback) makes GLTFLoader throw -> placeholder below
     const loader = new GLTFLoader(); loader.setMeshoptDecoder(MeshoptDecoder);
